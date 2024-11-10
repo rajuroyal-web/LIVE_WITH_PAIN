@@ -19,6 +19,8 @@ function renderAll() {
     renderMeals();
     updateEditableState();
     renderCalendar();
+    updateNoteButtonState();
+    showNoteOnVisit();
 }
 
 function updateEditableState() {
@@ -341,77 +343,137 @@ function renderCalendar() {
     });
 }
 
-document.getElementById('dateInput').addEventListener('change', (e) => {
-    const selectedDate = new Date(e.target.value);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+function toggleNoteCard() {
+    const noteCard = document.getElementById('noteCard');
+    const noteContent = document.getElementById('noteContent');
 
-    if (selectedDate <= today) {
-        currentDate = e.target.value;
-        renderAll();
-    } else {
-        alert("You can't select future dates.");
-        e.target.value = currentDate;
+    noteCard.classList.toggle('show');
+    if (noteCard.classList.contains('show')) {
+        noteContent.textContent = localStorage.getItem('globalNote') || 'No note for today.';
     }
-});
+}
 
-document.getElementById('prevDay').addEventListener('click', () => {
-    const date = new Date(currentDate);
-    date.setDate(date.getDate() - 1);
-    currentDate = date.toISOString().split('T')[0];
-    renderAll();
-});
+function updateNoteButtonState() {
+    const noteHighlight = document.getElementById('noteHighlight');
+    const noteBadge = document.getElementById('noteBadge');
+    const globalNote = localStorage.getItem('globalNote');
 
-document.getElementById('nextDay').addEventListener('click', () => {
-    const date = new Date(currentDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    if (globalNote) {
+        noteHighlight.classList.add('has-note');
+        noteBadge.style.display = 'block';
+    } else {
+        noteHighlight.classList.remove('has-note');
+        noteBadge.style.display = 'none';
+    }
+}
 
-    if (date < today) {
-        date.setDate(date.getDate() + 1);
+function updateNote() {
+    if (isEditMode) {
+        const noteContent = prompt('Enter your note:', localStorage.getItem('globalNote') || '');
+        if (noteContent !== null) {
+            localStorage.setItem('globalNote', noteContent);
+            document.getElementById('noteContent').textContent = noteContent;
+            document.getElementById('modalNoteContent').textContent = noteContent;
+            updateNoteButtonState();
+        }
+    } else {
+        alert('Please enable edit mode to update the note.');
+    }
+}
+
+function showNoteOnVisit() {
+    const globalNote = localStorage.getItem('globalNote');
+    if (globalNote) {
+        document.getElementById('modalNoteContent').textContent = globalNote;
+        const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+        noteModal.show();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('dateInput').addEventListener('change', (e) => {
+        const selectedDate = new Date(e.target.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (selectedDate <= today) {
+            currentDate = e.target.value;
+            renderAll();
+        } else {
+            alert("You can't select future dates.");
+            e.target.value = currentDate;
+        }
+    });
+
+    document.getElementById('prevDay').addEventListener('click', () => {
+        const date = new Date(currentDate);
+        date.setDate(date.getDate() - 1);
         currentDate = date.toISOString().split('T')[0];
         renderAll();
-    } else {
-        alert("You can't navigate to future dates.");
-    }
+    });
+
+    document.getElementById('nextDay').addEventListener('click', () => {
+        const date = new Date(currentDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (date < today) {
+            date.setDate(date.getDate() + 1);
+            currentDate = date.toISOString().split('T')[0];
+            renderAll();
+        } else {
+            alert("You can't navigate to future dates.");
+        }
+    });
+
+    document.getElementById('editButton').addEventListener('click', () => {
+        const passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
+        passwordModal.show();
+    });
+
+    document.getElementById('submitPassword').addEventListener('click', () => {
+        const enteredPassword = document.getElementById('passwordInput').value;
+        if (enteredPassword === password) {
+            isEditMode = true;
+            updateEditableState();
+            bootstrap.Modal.getInstance(document.getElementById('passwordModal')).hide();
+        } else {
+            alert('Incorrect password');
+        }
+    });
+
+    document.getElementById('saveButton').addEventListener('click', saveData);
+
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+        btn.addEventListener('click', () => setMood(btn.dataset.mood));
+    });
+
+    document.querySelectorAll('.energy-btn').forEach(btn => {
+        btn.addEventListener('click', () => setEnergyLevel(btn.dataset.energy));
+    });
+
+    document.querySelectorAll('.weather-btn').forEach(btn => {
+        btn.addEventListener('click', () => setWeather(btn.dataset.weather));
+    });
+
+    document.getElementById('addTodo').addEventListener('click', addTodo);
+    document.getElementById('addGoal').addEventListener('click', addGoal);
+    document.getElementById('addTransaction').addEventListener('click', addTransaction);
+
+    document.querySelectorAll('.addMeal').forEach(btn => {
+        btn.addEventListener('click', () => addMealItem(btn.dataset.meal));
+    });
+
+    document.getElementById('noteHighlight').addEventListener('click', () => {
+        const globalNote = localStorage.getItem('globalNote');
+        if (globalNote) {
+            document.getElementById('modalNoteContent').textContent = globalNote;
+            const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+            noteModal.show();
+        } else {
+            updateNote();
+        }
+    });
+
+    renderAll();
 });
-
-document.getElementById('editButton').addEventListener('click', () => {
-    const passwordModal = new bootstrap.Modal(document.getElementById('passwordModal'));
-    passwordModal.show();
-});
-
-document.getElementById('submitPassword').addEventListener('click', () => {
-    const enteredPassword = document.getElementById('passwordInput').value;
-    if (enteredPassword === password) {
-        isEditMode = true;
-        updateEditableState();
-        bootstrap.Modal.getInstance(document.getElementById('passwordModal')).hide();
-    } else {
-        alert('Incorrect password');
-    }
-});
-
-document.getElementById('saveButton').addEventListener('click', saveData);
-
-document.querySelectorAll('.mood-btn').forEach(btn => {
-    btn.addEventListener('click', () => setMood(btn.dataset.mood));
-});
-
-document.querySelectorAll('.energy-btn').forEach(btn => {
-    btn.addEventListener('click', () => setEnergyLevel(btn.dataset.energy));
-});
-
-document.querySelectorAll('.weather-btn').forEach(btn => {
-    btn.addEventListener('click', () => setWeather(btn.dataset.weather));
-});
-
-document.getElementById('addTodo').addEventListener('click', addTodo);
-document.getElementById('addGoal').addEventListener('click', addGoal);
-document.getElementById('addTransaction').addEventListener('click', addTransaction);
-
-document.querySelectorAll('.addMeal').forEach(btn => {
-    btn.addEventListener('click', () => addMealItem(btn.dataset.meal));
-});
-
-renderAll();
