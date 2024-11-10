@@ -197,3 +197,9 @@ h1, h2, h3 {
     font-size: 1.1rem;
     line-height: 1.6;
 }
+
+.app-logo {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+}
