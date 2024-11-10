@@ -1,12 +1,8 @@
-
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
     color: #333;
-    
 }
-
-
 
 .container {
     max-width: 1200px;
@@ -155,4 +151,49 @@ h1, h2, h3 {
 
 .datepicker-cell.disabled {
     color: #dc3545;
+}
+
+#noteHighlight {
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+#noteHighlight:hover {
+    transform: scale(1.1);
+}
+
+#noteHighlight.has-note {
+    animation: pulse 2s infinite;
+}
+
+#noteCard {
+    z-index: 999;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+#noteCard.show {
+    max-height: 300px;
+    opacity: 1;
+}
+
+#noteCard:hover {
+    box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+
+#noteModal .modal-content {
+    background-color: #f8f9fa;
+}
+
+#noteModal .modal-header {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+#noteModal .modal-body {
+    font-size: 1.1rem;
+    line-height: 1.6;
 }
